@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardápio Profissional - Sabor & Cia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Oswald:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #1a1a1a;
+            background-image: url('https://www.transparenttextures.com/patterns/dark-matter.png');
+            color: #fefefe;
+            font-family: 'Open Sans', sans-serif;
+        }
+        .chalk-font { font-family: 'Dancing Script', cursive; }
+        .header-font { font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 2px; }
+        .border-chalk {
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+        .menu-item { transition: all 0.3s ease; }
+        .menu-item:hover { background: rgba(255,255,255,0.05); }
+        input, select, textarea { background: #333 !important; border: 1px solid #444 !important; color: white !important; }
+    </style>
+</head>
+<body class="p-4 md:p-8 pb-32">
+
+    <div class="max-w-5xl mx-auto border-chalk bg-[#222] p-6 md:p-12 shadow-2xl rounded-sm">
+        
+        <header class="text-center mb-16">
+            <h2 class="chalk-font text-amber-500 text-3xl mb-2">Seja bem-vindo ao</h2>
+            <h1 class="header-font text-5xl md:text-7xl font-bold border-y-4 border-amber-600 inline-block py-2 px-6">Sabor & Cia</h1>
+            <p class="mt-4 text-gray-400 uppercase tracking-widest text-sm">Centro da Capital | Marmitex & Grelhados</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
+            <section>
+                <div class="flex items-center gap-4 mb-8">
+                    <h2 class="header-font text-3xl text-amber-500">Pratos do Dia</h2>
+                    <div class="flex-1 h-[1px] bg-amber-900"></div>
+                </div>
+                <div class="flex justify-around mb-8 bg-black/30 py-4 rounded-lg border border-white/5 text-sm uppercase">
+                    <span>P: R$10</span> <span>M: R$12</span> <span>G: R$14</span>
+                </div>
+                <ul class="space-y-2" id="lista-economica"></ul>
+            </section>
+
+            <section>
+                <div class="flex items-center gap-4 mb-8">
+                    <h2 class="header-font text-3xl text-amber-500">Seleção Premium</h2>
+                    <div class="flex-1 h-[1px] bg-amber-900"></div>
+                </div>
+                <div class="flex justify-around mb-8 bg-amber-900/20 py-4 rounded-lg border border-amber-900/30 text-sm uppercase">
+                    <span>P: R$15</span> <span>M: R$17</span> <span>G: R$19</span>
+                </div>
+                <ul class="space-y-2" id="lista-premium"></ul>
+            </section>
+        </div>
+    </div>
+
+    <!-- Barra do Carrinho -->
+    <div id="cart-bar" class="fixed bottom-0 left-0 right-0 bg-amber-800 p-4 shadow-2xl flex justify-between items-center max-w-5xl mx-auto rounded-t-xl hidden z-40">
+        <div class="flex items-center gap-4">
+            <div id="cart-badge" class="bg-white text-amber-900 font-bold w-10 h-10 rounded-full flex items-center justify-center shadow-lg">0</div>
+            <div>
+                <p id="cart-total" class="text-2xl font-bold text-white">R$ 0,00</p>
+            </div>
+        </div>
+        <button onclick="abrirCheckout()" class="bg-green-600 hover:bg-green-500 text-white px-8 py-3 rounded-lg font-bold shadow-lg transition-transform active:scale-95">
+            REVISAR PEDIDO
+        </button>
+    </div>
+
+    <!-- Modal de Tamanho -->
+    <div id="modal-tamanho" class="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-[#222] p-8 rounded-lg border border-amber-600 max-w-sm w-full">
+            <h3 id="item-nome-modal" class="header-font text-2xl mb-6 text-amber-500 text-center"></h3>
+            <div class="grid gap-4" id="opcoes-tamanho"></div>
+            <button onclick="fecharModal('modal-tamanho')" class="mt-6 w-full text-gray-400 text-sm">Voltar</button>
+        </div>
+    </div>
+
+    <!-- Modal de Checkout Profissional -->
+    <div id="modal-checkout" class="fixed inset-0 bg-black/95 flex items-center justify-center p-4 z-50 hidden overflow-y-auto">
+        <div class="bg-[#222] p-6 md:p-8 rounded-lg border border-white/10 max-w-2xl w-full my-8">
+            <h2 class="header-font text-3xl mb-6 text-amber-500 border-b border-amber-900/50 pb-2">Finalizar Pedido</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Dados do Cliente -->
+                <div class="space-y-4">
+                    <h3 class="text-sm uppercase font-bold text-gray-400">Entrega</h3>
+                    <input type="text" id="nome-cliente" placeholder="Seu Nome" class="w-full p-3 rounded">
+                    <select id="metodo-entrega" onchange="toggleEntrega()" class="w-full p-3 rounded">
+                        <option value="entrega">Entrega em Domicílio</option>
+                        <option value="retirada">Retirar no Balcão</option>
+                    </select>
+                    <div id="campo-endereco">
+                        <textarea id="endereco-cliente" placeholder="Endereço Completo (Rua, Nº, Bloco/Apto)" class="w-full p-3 rounded h-24"></textarea>
+                    </div>
+                </div>
+
+                <!-- Pagamento -->
+                <div class="space-y-4">
+                    <h3 class="text-sm uppercase font-bold text-gray-400">Pagamento</h3>
+                    <select id="metodo-pagamento" onchange="toggleTroco()" class="w-full p-3 rounded">
+                        <option value="pix">PIX (Chave: 11999999999)</option>
+                        <option value="cartao_credito">Cartão de Crédito (Levamos a máquina)</option>
+                        <option value="cartao_debito">Cartão de Débito (Levamos a máquina)</option>
+                        <option value="dinheiro">Dinheiro</option>
+                    </select>
+                    <div id="campo-troco" class="hidden">
+                        <input type="number" id="valor-troco" placeholder="Troco para quanto?" class="w-full p-3 rounded">
+                    </div>
+                    
+                    <div class="bg-black/40 p-4 rounded border border-white/5">
+                        <p class="text-xs uppercase text-gray-500">Resumo:</p>
+                        <div id="resumo-itens" class="text-sm my-2 max-h-32 overflow-y-auto"></div>
+                        <p id="resumo-total" class="text-xl font-bold text-amber-500 border-t border-white/10 pt-2"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 flex gap-4">
+                <button onclick="fecharModal('modal-checkout')" class="flex-1 py-3 bg-gray-700 rounded font-bold">Voltar</button>
+                <button onclick="enviarPedido()" class="flex-[2] py-3 bg-green-600 hover:bg-green-500 rounded font-bold text-white">ENVIAR PEDIDO</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const itensEconomicos = [
+            "Carne Moída com Vagem", "Filé de Frango Grelhado", "Salsicha ao Molho", 
+            "Espeto (Peito Empanado)", "Steik a Parmegiana", "Bisteca Grelhada"
+        ];
+        const itensPremium = [
+            "Feijoada", "Omelete Legumes", "Omelete Três Queijos", "Bife Acebolado", 
+            "Carne Assada Molho Madeira", "Cupim ao Alho", "Parmegiana de Carne", 
+            "Peixe Grelhado", "Rondelli P&Q", "Canelone Quatro Queijos"
+        ];
+
+        let carrinho = [];
+        let itemSelecionado = null;
+        let tipoSelecionado = '';
+
+        function renderizar() {
+            document.getElementById('lista-economica').innerHTML = itensEconomicos.map(item => `
+                <li onclick="abrirModalTamanho('${item}', 'economico')" class="menu-item p-3 border-b border-white/5 cursor-pointer flex justify-between group">
+                    <span class="text-gray-300 group-hover:text-white">${item}</span>
+                    <span class="text-amber-600 font-bold">+</span>
+                </li>
+            `).join('');
+
+            document.getElementById('lista-premium').innerHTML = itensPremium.map(item => `
+                <li onclick="abrirModalTamanho('${item}', 'premium')" class="menu-item p-3 border-b border-white/5 cursor-pointer flex justify-between group">
+                    <span class="text-gray-300 group-hover:text-white">${item}</span>
+                    <span class="text-amber-500 font-bold">+</span>
+                </li>
+            `).join('');
+        }
+
+        function abrirModalTamanho(nome, tipo) {
+            itemSelecionado = nome;
+            tipoSelecionado = tipo;
+            document.getElementById('item-nome-modal').innerText = nome;
+            const precos = tipo === 'economico' ? {P:10, M:12, G:14} : {P:15, M:17, G:19};
+            document.getElementById('opcoes-tamanho').innerHTML = Object.entries(precos).map(([tam, preco]) => `
+                <button onclick="adicionarAoCarrinho('${tam}', ${preco})" class="bg-[#333] hover:bg-amber-800 p-4 rounded-lg font-bold flex justify-between border border-white/5 transition-colors">
+                    <span>${tam === 'P' ? 'Pequena' : tam === 'M' ? 'Média' : 'Grande'}</span>
+                    <span>R$ ${preco.toFixed(2)}</span>
+                </button>
+            `).join('');
+            document.getElementById('modal-tamanho').classList.remove('hidden');
+        }
+
+        function fecharModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function adicionarAoCarrinho(tamanho, preco) {
+            carrinho.push({ nome: itemSelecionado, tamanho, preco });
+            atualizarCarrinho();
+            fecharModal('modal-tamanho');
+        }
+
+        function atualizarCarrinho() {
+            const total = carrinho.reduce((sum, item) => sum + item.preco, 0);
+            document.getElementById('cart-bar').classList.toggle('hidden', carrinho.length === 0);
+            document.getElementById('cart-badge').innerText = carrinho.length;
+            document.getElementById('cart-total').innerText = `R$ ${total.toFixed(2)}`;
+        }
+
+        function abrirCheckout() {
+            const resumo = document.getElementById('resumo-itens');
+            resumo.innerHTML = carrinho.map(i => `<div>${i.nome} (${i.tamanho}) - R$ ${i.preco.toFixed(2)}</div>`).join('');
+            const total = carrinho.reduce((sum, item) => sum + item.preco, 0);
+            document.getElementById('resumo-total').innerText = `Total: R$ ${total.toFixed(2)}`;
+            document.getElementById('modal-checkout').classList.remove('hidden');
+        }
+
+        function toggleTroco() {
+            const metodo = document.getElementById('metodo-pagamento').value;
+            document.getElementById('campo-troco').classList.toggle('hidden', metodo !== 'dinheiro');
+        }
+
+        function toggleEntrega() {
+            const metodo = document.getElementById('metodo-entrega').value;
+            document.getElementById('campo-endereco').classList.toggle('hidden', metodo === 'retirada');
+        }
+
+        function enviarPedido() {
+            const nome = document.getElementById('nome-cliente').value;
+            const entrega = document.getElementById('metodo-entrega').value;
+            const endereco = document.getElementById('endereco-cliente').value;
+            const pagamento = document.getElementById('metodo-pagamento').value;
+            const troco = document.getElementById('valor-troco').value;
+            const total = carrinho.reduce((sum, item) => sum + item.preco, 0);
+
+            if (!nome || (entrega === 'entrega' && !endereco)) {
+                return alert("Por favor, preencha seu nome e endereço de entrega.");
+            }
+
+            const numeroWhatsApp = "5511999999999"; // SUBSTITUA PELO SEU NÚMERO
+            let msg = `*NOVO PEDIDO - SABOR & CIA*\n`;
+            msg += `------------------------------\n`;
+            msg += `*Cliente:* ${nome}\n`;
+            msg += `*Tipo:* ${entrega === 'entrega' ? 'Entrega' : 'Retirada'}\n`;
+            if(entrega === 'entrega') msg += `*Endereço:* ${endereco}\n`;
+            msg += `------------------------------\n`;
+            msg += `*ITENS:*\n`;
+            carrinho.forEach(i => msg += `• ${i.nome} (${i.tamanho}) - R$ ${i.preco.toFixed(2)}\n`);
+            msg += `------------------------------\n`;
+            msg += `*Pagamento:* ${pagamento.toUpperCase()}\n`;
+            if(pagamento === 'dinheiro' && troco) msg += `*Troco para:* R$ ${troco}\n`;
+            msg += `*TOTAL: R$ ${total.toFixed(2)}*`;
+
+            window.open(`https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(msg)}`);
+        }
+
+        window.onload = renderizar;
+    </script>
+</body>
+</html>
